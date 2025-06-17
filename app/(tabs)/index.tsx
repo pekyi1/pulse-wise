@@ -47,36 +47,24 @@ export default function HomeScreen() {
       {/* Info Cards Grid */}
       <View style={styles.gridContainer}>
         <View style={[styles.card, styles.blueCard]}> {/* Heart Rate */}
-          <View style={styles.cardTitleRow}>
-  <MaterialIcons name="favorite" size={18} color="#fff" style={styles.cardTitleIcon} />
-  <Text style={[styles.cardTitle, styles.heartTitle]}>Heart Rate</Text>
-</View>
+          <View style={styles.cardTitleRow}><MaterialIcons name="favorite" size={18} color="#fff" style={styles.cardTitleIcon} /><Text style={[styles.cardTitle, styles.heartTitle]}>Heart Rate</Text></View>
           <View style={styles.heartChart}>
             {/* Placeholder for heart rate chart */}
-            <MaterialIcons name="show-chart" size={38} color="#fff" />
+            <Image source={require('@/assets/images/heart-rate.png')} style={{width: 90, height: 58, resizeMode: 'contain'}} />
           </View>
           <Text style={styles.heartRateValue}><Text>72 </Text><Text style={styles.bpm}>bpm</Text></Text>
         </View>
         <View style={styles.card}> {/* ECG */}
-          <View style={styles.cardTitleRow}>
-  <MaterialIcons name="electrical-services" size={18} color="#222" style={styles.cardTitleIcon} />
-  <Text style={styles.cardTitle}>ECG Information</Text>
-</View>
-          <MaterialIcons name="electrical-services" size={36} color="#222" style={{ marginVertical: 10 }} />
+          <View style={styles.cardTitleRow}><MaterialIcons name="electrical-services" size={18} color="#222" style={styles.cardTitleIcon} /><Text style={styles.cardTitle}>ECG Information</Text></View>
+          <Image source={require('@/assets/images/ecg.png')} style={{width: 90, height: 58, resizeMode: 'contain'}} />
           <Text style={styles.cardValue}><Text>25</Text><Text style={styles.cardUnit}> mm/s</Text></Text>
         </View>
         <View style={styles.card}> {/* Oxygen */}
-          <View style={styles.cardTitleRow}>
-  <MaterialIcons name="water-drop" size={18} color="#222" style={styles.cardTitleIcon} />
-  <Text style={styles.cardTitle}>Oxygen(SPO₂)</Text>
-</View>
+          <View style={styles.cardTitleRow}><MaterialIcons name="water-drop" size={18} color="#222" style={styles.cardTitleIcon} /><Text style={styles.cardTitle}>Oxygen(SPO₂)</Text></View>
           <Text style={styles.cardValue}><Text>25</Text><Text style={styles.cardUnit}> %</Text></Text>
         </View>
         <View style={styles.card}> {/* Blood Pressure */}
-          <View style={styles.cardTitleRow}>
-  <MaterialIcons name="bloodtype" size={18} color="#222" style={styles.cardTitleIcon} />
-  <Text style={styles.cardTitle}>Blood Pressure</Text>
-</View>
+          <View style={styles.cardTitleRow}><MaterialIcons name="bloodtype" size={18} color="#222" style={styles.cardTitleIcon} /><Text style={styles.cardTitle}>Blood Pressure</Text></View>
           <Text style={styles.cardValue}><Text>120/80</Text><Text style={styles.cardUnit}> mmHg</Text></Text>
         </View>
       </View>
