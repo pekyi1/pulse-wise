@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, PermissionsAndroid, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BleManager, Device } from 'react-native-ble-plx';
 
 const manager = new BleManager();
@@ -9,29 +9,58 @@ export default function ConnectScreen() {
   const [scanning, setScanning] = useState(false);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
 
+  // Track if component is mounted
+  const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
     return () => {
+      isMounted.current = false;
+      manager.stopDeviceScan();
       manager.destroy();
     };
   }, []);
 
-  const scanForDevices = () => {
+  async function requestPermissions() {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+        ]);
+        return Object.values(granted).every(val => val === PermissionsAndroid.RESULTS.GRANTED);
+      } catch (err) {
+        Alert.alert('Permission Error', 'Bluetooth permissions are required.');
+        return false;
+      }
+    }
+    return true; // iOS handled via Info.plist
+  }
+
+  const scanForDevices = async () => {
+    if (!(await requestPermissions())) return;
     setDevices([]);
     setScanning(true);
     manager.startDeviceScan(null, null, (error, device) => {
       if (error) {
         setScanning(false);
-        alert('Scan error: ' + error.message);
+        Alert.alert('Scan error', error.message);
+        manager.stopDeviceScan();
         return;
       }
-      if (device && device.name && !devices.some(d => d.id === device.id)) {
-        setDevices(prev => [...prev, device]);
+      if (device && device.name && isMounted.current) {
+        setDevices(prev => {
+          if (!prev.some(d => d.id === device.id)) {
+            return [...prev, device];
+          }
+          return prev;
+        });
       }
     });
     setTimeout(() => {
       manager.stopDeviceScan();
       setScanning(false);
-    }, 5000);
+    }, 10000);
   };
 
   // Fix for type error: device parameter
@@ -43,9 +72,21 @@ export default function ConnectScreen() {
       manager.stopDeviceScan();
       const connected = await manager.connectToDevice(device.id);
       setConnectedDevice(connected);
-      alert('Connected to ' + device.name);
+      Alert.alert('Connected', `Connected to ${device.name}`);
     } catch (e: any) {
-      alert('Connection failed: ' + (e?.message || e));
+      Alert.alert('Connection failed', e?.message || String(e));
+    }
+  };
+
+  const disconnectFromDevice = async () => {
+    if (connectedDevice) {
+      try {
+        await manager.cancelDeviceConnection(connectedDevice.id);
+        setConnectedDevice(null);
+        Alert.alert('Disconnected', 'Device has been disconnected.');
+      } catch (e: any) {
+        Alert.alert('Disconnection failed', e?.message || String(e));
+      }
     }
   };
 
@@ -85,6 +126,9 @@ export default function ConnectScreen() {
       {connectedDevice && (
         <View style={styles.connectedBanner}>
           <Text style={styles.connectedText}>Connected to: {connectedDevice.name}</Text>
+          <TouchableOpacity style={styles.disconnectButton} onPress={disconnectFromDevice}>
+            <Text style={styles.disconnectButtonText}>Disconnect</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -92,6 +136,21 @@ export default function ConnectScreen() {
 }
 
 const styles = StyleSheet.create({
+  disconnectButton: {
+    width: '100%',
+    backgroundColor: '#ff4d4f', // A strong red
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+    elevation: 2,
+  },
+  disconnectButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
   container: {
     flex: 1,
     alignItems: 'center',
