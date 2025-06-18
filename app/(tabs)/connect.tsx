@@ -92,7 +92,7 @@ export default function ConnectScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Connect to Device</Text>
+      <Text style={styles.text}>Connect to your PulseWise Device</Text>
       <TouchableOpacity
         style={[styles.scanButton, scanning && styles.scanButtonDisabled]}
         onPress={scanForDevices}
@@ -165,6 +165,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#246BFD',
     letterSpacing: 0.5,
+    textAlign: 'center',
   },
   scanButton: {
     width: '100%',
