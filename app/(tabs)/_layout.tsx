@@ -1,7 +1,6 @@
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function TabLayout() {
   return (
@@ -18,10 +17,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="schedule"
+        name="connect"
         options={{
-          title: 'Schedule',
-          tabBarIcon: ({ color }) => <MaterialIcons name="event-note" size={24} color={color} />, // Schedule icon
+          title: 'Connect',
+          tabBarIcon: ({ color }) => <MaterialIcons name="bluetooth" size={24} color={color} />, // Bluetooth icon
         }}
       />
       <Tabs.Screen
