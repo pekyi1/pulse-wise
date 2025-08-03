@@ -175,3 +175,12 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+android.applicationVariants.all { variant ->
+    variant.outputs.all { output ->
+        def appName = "PulseWise"    // <-- change if needed
+        def versionName = variant.versionName
+        def buildType = variant.buildType.name.capitalize()
+        outputFileName = "${appName}-v${versionName}-${buildType}.apk"
+    }
+}
