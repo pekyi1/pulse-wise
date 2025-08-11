@@ -1,23 +1,29 @@
 {
   "expo": {
-    "name": "my-ble-app",
-    "slug": "my-ble-app",
+    "name": "PulseWise",
+    "slug": "pulsewise",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./icon.png",
-    "scheme": "mybleapp",
+    "icon": "./assets/images/icon.png",
+    "scheme": "pulsewise",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.mybleapp"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.mybleapp"
+      "package": "com.anonymous.mybleapp",
+      "permissions": [
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT"
+      ]
     },
     "web": {
       "bundler": "metro",

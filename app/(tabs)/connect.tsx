@@ -1,22 +1,35 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, PermissionsAndroid, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { BleManager, Device } from 'react-native-ble-plx';
+import Constants from 'expo-constants';
 
-const manager = new BleManager();
+// Minimal shape we use from BLE device
+type SimpleDevice = { id: string; name?: string | null };
+const isExpoGo = Constants.appOwnership === 'expo';
 
 export default function ConnectScreen() {
-  const [devices, setDevices] = useState<Device[]>([]);
+  const [devices, setDevices] = useState<SimpleDevice[]>([]);
   const [scanning, setScanning] = useState(false);
-  const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
+  const [connectedDevice, setConnectedDevice] = useState<SimpleDevice | null>(null);
+  const manager = useRef<any | null>(null);
 
   // Track if component is mounted
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
+
+    if (!isExpoGo) {
+      // Dynamically require BLE manager only in a dev build / standalone
+      const { BleManager } = require('react-native-ble-plx');
+      manager.current = new BleManager();
+    }
+
     return () => {
       isMounted.current = false;
-      manager.stopDeviceScan();
-      manager.destroy();
+      if (manager.current) {
+        try { manager.current.stopDeviceScan(); } catch {}
+        try { manager.current.destroy(); } catch {}
+        manager.current = null;
+      }
     };
   }, []);
 
@@ -38,14 +51,22 @@ export default function ConnectScreen() {
   }
 
   const scanForDevices = async () => {
+    if (isExpoGo) {
+      Alert.alert('Unavailable in Expo Go', 'Bluetooth scanning requires a development build. Open this app with a dev client to use Connect.');
+      return;
+    }
+    if (!manager.current) {
+      Alert.alert('Bluetooth not initialized', 'BLE manager is not available.');
+      return;
+    }
     if (!(await requestPermissions())) return;
     setDevices([]);
     setScanning(true);
-    manager.startDeviceScan(null, null, (error, device) => {
+    manager.current.startDeviceScan(null, null, (error: any, device: any) => {
       if (error) {
         setScanning(false);
         Alert.alert('Scan error', error.message);
-        manager.stopDeviceScan();
+        manager.current && manager.current.stopDeviceScan();
         return;
       }
       if (device && device.name && isMounted.current) {
@@ -58,20 +79,19 @@ export default function ConnectScreen() {
       }
     });
     setTimeout(() => {
-      manager.stopDeviceScan();
+      manager.current && manager.current.stopDeviceScan();
       setScanning(false);
     }, 10000);
   };
 
-  // Fix for type error: device parameter
-  type DeviceType = Device | null;
-
-  const connectToDevice = async (device: Device) => {
+  const connectToDevice = async (device: SimpleDevice) => {
     try {
       setScanning(false);
-      manager.stopDeviceScan();
-      const connected = await manager.connectToDevice(device.id);
-      setConnectedDevice(connected);
+      if (manager.current) {
+        manager.current.stopDeviceScan();
+        await manager.current.connectToDevice(device.id);
+      }
+      setConnectedDevice(device);
       Alert.alert('Connected', `Connected to ${device.name}`);
     } catch (e: any) {
       Alert.alert('Connection failed', e?.message || String(e));
@@ -81,7 +101,9 @@ export default function ConnectScreen() {
   const disconnectFromDevice = async () => {
     if (connectedDevice) {
       try {
-        await manager.cancelDeviceConnection(connectedDevice.id);
+        if (manager.current) {
+          await manager.current.cancelDeviceConnection(connectedDevice.id);
+        }
         setConnectedDevice(null);
         Alert.alert('Disconnected', 'Device has been disconnected.');
       } catch (e: any) {
@@ -89,6 +111,17 @@ export default function ConnectScreen() {
       }
     }
   };
+
+  if (isExpoGo) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.text}>Connect to your PulseWise Device</Text>
+        <Text style={{ color: '#666', textAlign: 'center' }}>
+          Bluetooth is unavailable in Expo Go. Build a development client to use this feature.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
