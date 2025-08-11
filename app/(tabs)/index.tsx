@@ -26,7 +26,7 @@ export default function HomeScreen() {
           <Text style={styles.nameText}>Pekyi Fred</Text>
         </View>
         <Image
-          source={require('@/assets/images/profile-placeholder.png')}
+          source={require('@/assets/images/profile-placeholder.jpg')}
           style={styles.profileImage}
         />
       </View>
